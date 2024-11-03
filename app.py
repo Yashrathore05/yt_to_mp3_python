@@ -2,59 +2,77 @@ import streamlit as st
 import yt_dlp
 import os
 
-# Set the title of the app
-st.title("Xtract Audio")
+# Streamlit Page Configurations
+st.set_page_config(page_title="Xtract Audio", layout="centered")
 
-# Centered input for URL
-st.markdown("<h3>Enter the YouTube Playlist URL:</h3>", unsafe_allow_html=True)
-playlist_url = st.text_input("")
+# Header
+st.markdown("<h1 style='text-align: center;'>Xtract Audio</h1>", unsafe_allow_html=True)
 
-# Function to download the playlist as MP3
-def download_youtube_playlist_as_mp3(playlist_url):
+# Download Functions
+def download_audio_direct_mp3(url):
     ydl_opts = {
-        'format': 'bestaudio/best',
+        'format': 'bestaudio[ext=mp3]/bestaudio',
         'outtmpl': 'Downloaded_MP3/%(title)s.%(ext)s',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
-        'ffmpeg_location': 'C:/ffmpeg/bin/ffmpeg.exe'  # <-- Update this path
+        'ffmpeg_location': None,  # This line avoids specifying ffmpeg
     }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([playlist_url])
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+        st.success("Download completed successfully!")
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
+
+def download_audio_original_format(url):
+    ydl_opts = {
+        'format': 'bestaudio',
+        'outtmpl': 'Downloaded_Audio/%(title)s.%(ext)s',
+    }
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+        st.success("Download completed successfully!")
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
+
+# Input and Selection
+st.write("Enter the YouTube URL to download audio from:")
+url = st.text_input("YouTube URL", value="", label_visibility="collapsed")
+
+download_choice = st.radio(
+    "Choose Download Format:",
+    ("Direct MP3 Download (No Conversion)", "Original Format (webm/m4a)")
+)
 
 # Button to trigger download
-if st.button("Download MP3"):
-    if playlist_url:
-        try:
-            download_youtube_playlist_as_mp3(playlist_url)
-            st.success("Download completed successfully!")
-        except Exception as e:
-            st.error(f"An error occurred: {str(e)}")
+if st.button("Download"):
+    if not url:
+        st.warning("Please enter a valid YouTube URL.")
     else:
-        st.warning("Please enter a valid playlist URL.")
+        # Ensure directories exist
+        if not os.path.exists("Downloaded_MP3"):
+            os.makedirs("Downloaded_MP3")
+        if not os.path.exists("Downloaded_Audio"):
+            os.makedirs("Downloaded_Audio")
+
+        if download_choice == "Direct MP3 Download (No Conversion)":
+            download_audio_direct_mp3(url)
+        else:
+            download_audio_original_format(url)
 
 # Footer
-st.markdown("---")
 st.markdown(
     """
-    <style>
-        footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            text-align: center;
-            padding: 10px;
-            background-color: #f1f1f1;
-            color: #555;
-        }
-    </style>
-    <footer>
-        &copy; 2024 IMMERSIVE X | Made by Yash Rathore
+    <hr style="margin-top: 2rem;">
+    <footer style="text-align: center;">
+        <p>&copy; 2024 IMMERSIVE X | Made by Yash Rathore</p>
     </footer>
-    """,
+    """, 
     unsafe_allow_html=True
 )
