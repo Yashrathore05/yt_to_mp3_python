@@ -18,15 +18,18 @@ def download_audio_direct_mp3(url):
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
-        'ffmpeg_location': None,  # This line avoids specifying ffmpeg
+        'ffmpeg_location': None,
     }
 
+    file_path = ""
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
+            info = ydl.extract_info(url, download=True)
+            file_path = f"Downloaded_MP3/{info['title']}.mp3"
         st.success("Download completed successfully!")
     except Exception as e:
         st.error(f"An error occurred: {e}")
+    return file_path
 
 def download_audio_original_format(url):
     ydl_opts = {
@@ -34,12 +37,15 @@ def download_audio_original_format(url):
         'outtmpl': 'Downloaded_Audio/%(title)s.%(ext)s',
     }
 
+    file_path = ""
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
+            info = ydl.extract_info(url, download=True)
+            file_path = f"Downloaded_Audio/{info['title']}.{info['ext']}"
         st.success("Download completed successfully!")
     except Exception as e:
         st.error(f"An error occurred: {e}")
+    return file_path
 
 # Input and Selection
 st.write("Enter the YouTube URL to download audio from:")
@@ -51,6 +57,7 @@ download_choice = st.radio(
 )
 
 # Button to trigger download
+file_path = ""
 if st.button("Download"):
     if not url:
         st.warning("Please enter a valid YouTube URL.")
@@ -62,9 +69,19 @@ if st.button("Download"):
             os.makedirs("Downloaded_Audio")
 
         if download_choice == "Direct MP3 Download (No Conversion)":
-            download_audio_direct_mp3(url)
+            file_path = download_audio_direct_mp3(url)
         else:
-            download_audio_original_format(url)
+            file_path = download_audio_original_format(url)
+
+        # Provide download button if the file path is valid
+        if file_path and os.path.exists(file_path):
+            with open(file_path, "rb") as file:
+                st.download_button(
+                    label="Click here to download your audio file",
+                    data=file,
+                    file_name=os.path.basename(file_path),
+                    mime="audio/mpeg" if file_path.endswith(".mp3") else "audio/webm",
+                )
 
 # Footer
 st.markdown(
