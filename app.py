@@ -5,9 +5,9 @@ import os
 # Set the title of the app
 st.title("Xtract Audio")
 
-# Sidebar for URL input
-st.sidebar.header("Download Settings")
-playlist_url = st.sidebar.text_input("Enter the YouTube Playlist URL")
+# Centered input for URL
+st.markdown("<h3>Enter the YouTube Playlist URL:</h3>", unsafe_allow_html=True)
+playlist_url = st.text_input("")
 
 # Function to download the playlist as MP3
 def download_youtube_playlist_as_mp3(playlist_url):
