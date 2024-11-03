@@ -19,7 +19,7 @@ def download_youtube_playlist_as_mp3(playlist_url):
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
-        'ffmpeg_location': 'C:/ffmpeg-master-latest-win64-gpl/bin/ffmpeg.exe'  # Set path to FFmpeg
+        'ffmpeg_location': 'C:/ffmpeg/bin/ffmpeg.exe'  # <-- Update this path
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
